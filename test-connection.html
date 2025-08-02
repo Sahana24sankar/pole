@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Frontend-Backend Connection Test</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 min-h-screen p-8">
+    <div class="max-w-4xl mx-auto">
+        <h1 class="text-3xl font-bold text-gray-900 mb-8">🔗 Frontend-Backend Connection Test</h1>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- Health Check -->
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <h2 class="text-xl font-semibold mb-4">🏥 Health Check</h2>
+                <button onclick="testHealth()" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
+                    Test Health Endpoint
+                </button>
+                <div id="healthResult" class="mt-4 p-3 bg-gray-100 rounded hidden">
+                    <pre id="healthData" class="text-sm"></pre>
+                </div>
+            </div>
+
+            <!-- Get All Ads -->
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <h2 class="text-xl font-semibold mb-4">📊 Get All Ads</h2>
+                <button onclick="testGetAds()" class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">
+                    Test Get Ads Endpoint
+                </button>
+                <div id="adsResult" class="mt-4 p-3 bg-gray-100 rounded hidden">
+                    <pre id="adsData" class="text-sm"></pre>
+                </div>
+            </div>
+
+            <!-- Upload Test -->
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <h2 class="text-xl font-semibold mb-4">📤 Upload Test</h2>
+                <input type="file" id="testFile" accept="image/*" class="mb-4">
+                <button onclick="testUpload()" class="bg-purple-500 text-white px-4 py-2 rounded hover:bg-purple-600">
+                    Test Upload Endpoint
+                </button>
+                <div id="uploadResult" class="mt-4 p-3 bg-gray-100 rounded hidden">
+                    <pre id="uploadData" class="text-sm"></pre>
+                </div>
+            </div>
+
+            <!-- Connection Status -->
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <h2 class="text-xl font-semibold mb-4">🔗 Connection Status</h2>
+                <div id="connectionStatus" class="text-lg font-medium">
+                    <span class="text-yellow-500">⏳ Testing...</span>
+                </div>
+                <div id="statusDetails" class="mt-2 text-sm text-gray-600"></div>
+            </div>
+        </div>
+
+        <!-- Summary -->
+        <div class="mt-8 bg-white rounded-lg shadow-md p-6">
+            <h2 class="text-xl font-semibold mb-4">📋 Connection Summary</h2>
+            <div id="summary" class="space-y-2">
+                <div class="flex items-center">
+                    <span id="backendStatus" class="w-4 h-4 rounded-full mr-2"></span>
+                    <span>Backend Server (Port 3001)</span>
+                </div>
+                <div class="flex items-center">
+                    <span id="databaseStatus" class="w-4 h-4 rounded-full mr-2"></span>
+                    <span>Database Connection</span>
+                </div>
+                <div class="flex items-center">
+                    <span id="corsStatus" class="w-4 h-4 rounded-full mr-2"></span>
+                    <span>CORS Configuration</span>
+                </div>
+                <div class="flex items-center">
+                    <span id="apiStatus" class="w-4 h-4 rounded-full mr-2"></span>
+                    <span>API Endpoints</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Test health endpoint
+        async function testHealth() {
+            const resultDiv = document.getElementById('healthResult');
+            const dataDiv = document.getElementById('healthData');
+            
+            try {
+                const response = await fetch('http://localhost:3001/api/health');
+                const data = await response.json();
+                
+                dataDiv.textContent = JSON.stringify(data, null, 2);
+                resultDiv.classList.remove('hidden');
+                
+                if (data.success) {
+                    document.getElementById('backendStatus').className = 'w-4 h-4 rounded-full mr-2 bg-green-500';
+                    document.getElementById('databaseStatus').className = 'w-4 h-4 rounded-full mr-2 bg-green-500';
+                }
+            } catch (error) {
+                dataDiv.textContent = `Error: ${error.message}`;
+                resultDiv.classList.remove('hidden');
+                document.getElementById('backendStatus').className = 'w-4 h-4 rounded-full mr-2 bg-red-500';
+            }
+        }
+
+        // Test get ads endpoint
+        async function testGetAds() {
+            const resultDiv = document.getElementById('adsResult');
+            const dataDiv = document.getElementById('adsData');
+            
+            try {
+                const response = await fetch('http://localhost:3001/api/ads');
+                const data = await response.json();
+                
+                dataDiv.textContent = JSON.stringify(data, null, 2);
+                resultDiv.classList.remove('hidden');
+                
+                if (data.success) {
+                    document.getElementById('apiStatus').className = 'w-4 h-4 rounded-full mr-2 bg-green-500';
+                }
+            } catch (error) {
+                dataDiv.textContent = `Error: ${error.message}`;
+                resultDiv.classList.remove('hidden');
+                document.getElementById('apiStatus').className = 'w-4 h-4 rounded-full mr-2 bg-red-500';
+            }
+        }
+
+        // Test upload endpoint
+        async function testUpload() {
+            const fileInput = document.getElementById('testFile');
+            const resultDiv = document.getElementById('uploadResult');
+            const dataDiv = document.getElementById('uploadData');
+            
+            if (!fileInput.files[0]) {
+                alert('Please select a file first');
+                return;
+            }
+            
+            try {
+                const formData = new FormData();
+                formData.append('adFile', fileInput.files[0]);
+                formData.append('poleType', '1');
+                formData.append('createdBy', 'test-user');
+                
+                const response = await fetch('http://localhost:3001/api/upload-ad', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const data = await response.json();
+                
+                dataDiv.textContent = JSON.stringify(data, null, 2);
+                resultDiv.classList.remove('hidden');
+                
+                if (data.success) {
+                    document.getElementById('corsStatus').className = 'w-4 h-4 rounded-full mr-2 bg-green-500';
+                }
+            } catch (error) {
+                dataDiv.textContent = `Error: ${error.message}`;
+                resultDiv.classList.remove('hidden');
+                document.getElementById('corsStatus').className = 'w-4 h-4 rounded-full mr-2 bg-red-500';
+            }
+        }
+
+        // Auto-test on page load
+        window.onload = async function() {
+            const statusDiv = document.getElementById('connectionStatus');
+            const detailsDiv = document.getElementById('statusDetails');
+            
+            try {
+                // Test basic connectivity
+                const response = await fetch('http://localhost:3001/api/health');
+                const data = await response.json();
+                
+                if (data.success) {
+                    statusDiv.innerHTML = '<span class="text-green-500">✅ Connected Successfully!</span>';
+                    detailsDiv.textContent = `Backend: ${data.data.database} | Total Ads: ${data.data.totalAds} | Active Ads: ${data.data.activeAds}`;
+                    
+                    // Update all status indicators
+                    document.getElementById('backendStatus').className = 'w-4 h-4 rounded-full mr-2 bg-green-500';
+                    document.getElementById('databaseStatus').className = 'w-4 h-4 rounded-full mr-2 bg-green-500';
+                    document.getElementById('corsStatus').className = 'w-4 h-4 rounded-full mr-2 bg-green-500';
+                    document.getElementById('apiStatus').className = 'w-4 h-4 rounded-full mr-2 bg-green-500';
+                } else {
+                    statusDiv.innerHTML = '<span class="text-red-500">❌ Connection Failed</span>';
+                    detailsDiv.textContent = 'Backend server is not responding properly';
+                }
+            } catch (error) {
+                statusDiv.innerHTML = '<span class="text-red-500">❌ Connection Failed</span>';
+                detailsDiv.textContent = `Error: ${error.message}`;
+                
+                // Update status indicators
+                document.getElementById('backendStatus').className = 'w-4 h-4 rounded-full mr-2 bg-red-500';
+                document.getElementById('databaseStatus').className = 'w-4 h-4 rounded-full mr-2 bg-red-500';
+                document.getElementById('corsStatus').className = 'w-4 h-4 rounded-full mr-2 bg-red-500';
+                document.getElementById('apiStatus').className = 'w-4 h-4 rounded-full mr-2 bg-red-500';
+            }
+        };
+    </script>
+</body>
+</html> 
