@@ -103,23 +103,7 @@ CREATE TABLE pole_images (
 
 ## 🔧 Configuration
 
-### Environment Variables (`config.env`)
-```env
-# Database Configuration
-DB_HOST=ai-chatbot.c7mkqkyiqpit.ap-south-1.rds.amazonaws.com
-DB_PORT=5432
-DB_NAME=SmartPole
-DB_USER=postgres
-DB_PASSWORD=Web3things!
 
-# Server Configuration
-PORT=3001
-NODE_ENV=development
-
-# File Upload Configuration
-UPLOAD_PATH=./uploads
-MAX_FILE_SIZE=10485760
-```
 
 ## 📁 Project Structure
 
